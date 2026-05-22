@@ -1,20 +1,37 @@
 pipeline {
-
     agent any
 
     stages {
 
-        stage('Build Docker Image') {
+        stage('Clone Code') {
             steps {
-                sh 'docker build -t banking-app .'
+                git branch: 'main',
+                url: 'https://github.com/priyaanka-spin/banking-platform.git'
             }
         }
 
-        stage('Run Container') {
+        stage('Build Docker Image') {
             steps {
-                sh 'docker rm -f banking-app || true'
-                sh 'docker run -d --name banking-app -p 5000:5000 banking-app'
+                sh 'docker compose down || true'
+                sh 'docker compose up -d --build'
             }
+        }
+
+        stage('Verify Containers') {
+            steps {
+                sh 'docker ps'
+            }
+        }
+
+    }
+
+    post {
+        success {
+            echo 'Pipeline executed successfully!'
+        }
+
+        failure {
+            echo 'Pipeline failed!'
         }
     }
 }
