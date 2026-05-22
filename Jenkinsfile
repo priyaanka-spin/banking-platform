@@ -1,33 +1,16 @@
 pipeline {
     agent any
 
-    tools {
-        sonarQube 'sonar-scanner'
-    }
-
     environment {
         SCANNER_HOME = tool 'sonar-scanner'
     }
 
     stages {
 
-        stage('Clone') {
+        stage('Clone Code') {
             steps {
-                echo 'Code cloned'
-            }
-        }
-
-        stage('SonarQube Scan') {
-            steps {
-                withSonarQubeEnv('sonarqube') {
-                    sh '''
-                    $SCANNER_HOME/bin/sonar-scanner \
-                    -Dsonar.projectKey=banking-platform \
-                    -Dsonar.sources=. \
-                    -Dsonar.host.url=http://35.244.38.55:9000 \
-                    -Dsonar.login=$SONAR_AUTH_TOKEN
-                    '''
-                }
+                git branch: 'main',
+                url: 'https://github.com/priyaanka-spin/banking-platform.git'
             }
         }
 
@@ -39,26 +22,36 @@ pipeline {
 
         stage('Run Container') {
             steps {
-                sh 'docker stop banking-app || true'
-                sh 'docker rm banking-app || true'
-                sh 'docker run -d --name banking-app -p 5000:5000 banking-app'
+                sh '''
+                docker stop banking-app || true
+                docker rm banking-app || true
+                docker run -d --name banking-app -p 8081:80 banking-app
+                '''
             }
         }
 
-        stage('Verify') {
+        stage('SonarQube Scan') {
             steps {
-                sh 'docker ps'
+                withSonarQubeEnv('sonarqube') {
+                    sh '''
+                    $SCANNER_HOME/bin/sonar-scanner \
+                    -Dsonar.projectKey=banking-platform \
+                    -Dsonar.sources=. \
+                    -Dsonar.host.url=http://35.244.38.55:9000 \
+                    -Dsonar.login=squ_51e5812b70764bbf16aa87078098f9f2bb56a6b8
+                    '''
+                }
             }
         }
     }
 
     post {
         success {
-            echo 'Pipeline Success'
+            echo 'Pipeline succeeded!'
         }
 
         failure {
-            echo 'Pipeline Failed'
+            echo 'Pipeline failed!'
         }
     }
 }
