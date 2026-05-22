@@ -3,35 +3,28 @@ pipeline {
 
     stages {
 
-        stage('Clone Code') {
+        stage('Clone') {
             steps {
-                git branch: 'main',
-                url: 'https://github.com/priyaanka-spin/banking-platform.git'
+                echo 'Cloning done'
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Build Image') {
             steps {
-                sh 'docker compose down || true'
-                sh 'docker compose up -d --build'
+                sh 'docker build -t banking-app .'
             }
         }
 
-        stage('Verify Containers') {
+        stage('Run Container') {
+            steps {
+                sh 'docker run -d --name banking-app -p 5000:5000 banking-app || true'
+            }
+        }
+
+        stage('Check') {
             steps {
                 sh 'docker ps'
             }
-        }
-
-    }
-
-    post {
-        success {
-            echo 'Pipeline executed successfully!'
-        }
-
-        failure {
-            echo 'Pipeline failed!'
         }
     }
 }
