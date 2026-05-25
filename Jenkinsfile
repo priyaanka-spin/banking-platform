@@ -29,6 +29,11 @@ pipeline {
                 '''
             }
         }
+        stage('Trivy Scan') {
+            steps {
+                sh 'trivy image banking-app'
+            }
+        }
 
         stage('SonarQube Scan') {
             steps {
