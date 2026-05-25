@@ -25,3 +25,22 @@ spec:
 
         ports:
         - containerPort: 5000
+
+        env:
+        - name: APP_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: banking-config
+              key: APP_ENV
+
+        - name: DB_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: banking-secret
+              key: DB_USERNAME
+
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: banking-secret
+              key: DB_PASSWORD
